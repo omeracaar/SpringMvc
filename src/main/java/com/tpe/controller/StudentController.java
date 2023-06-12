@@ -1,14 +1,17 @@
 package com.tpe.controller;
 
 import com.tpe.domain.Student;
+import com.tpe.exception.ResourceNotFoundException;
 import com.tpe.repository.StudentRepository;
 import com.tpe.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @Controller//@RestController
@@ -43,9 +46,19 @@ public class StudentController {
 
     //studenti DB ye kaydedince tum ogrencileri listeleyelim
     //http://localhost:8080/SpringMvc/students/saveStudent+POST
-    @PostMapping("/saveStudent")
-    public String saveStudent(@ModelAttribute Student student){
+   // @PostMapping("/saveStudent")
+   // public String saveStudent(@ModelAttribute Student student){
+//
+   //     //service de student i kaydet
+   //     service.saveStudent(student);
+   //     return "redirect:/students";//http://localhost:8080/SpringMvc/students/students bu istege yonlendirelim
+   // }
 
+    @PostMapping("/saveStudent")
+    public String saveStudent(@Valid @ModelAttribute Student student, BindingResult bindingResult){
+        if (bindingResult.hasErrors()){
+            return "studentForm";
+        }
         //service de student i kaydet
         service.saveStudent(student);
         return "redirect:/students";//http://localhost:8080/SpringMvc/students/students bu istege yonlendirelim
@@ -78,6 +91,26 @@ public class StudentController {
    //     model.addAttribute("student",foundStudent);
    //     return "studentForm";
    // }
+
+    //4-delete student
+    //http://localhost:8080/SpringMvc/students/delete/4
+    //silme isleminden sonra tum kayitlari listele
+    @GetMapping("/delete/{id}")
+    public String deleteStudents(@PathVariable("id") Long id){
+        service.deleteStudent(id);
+        return "redirect/students";
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ModelAndView handleException(Exception e){
+        ModelAndView mav=new ModelAndView();
+        mav.addObject("message",e.getMessage());
+        mav.setViewName("notFound");
+        return mav;
+    }
+
+    //ExceptionHandler: belirtilen exception sinifi icin bir method belirlememizi saglar
+    //bu method yakalanan exception icin ozel bir islem icerir(notFound u icinde mesaj ile gosterme)
 
 
 }
